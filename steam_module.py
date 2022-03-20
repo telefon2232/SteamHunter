@@ -19,4 +19,4 @@ def steam_friends_parser(link):
         if not i.isdigit():
             friends_valid_link.append(i)
 
-    return friends_valid_link
+    return friends_valid_link, len(friends_valid_link)
