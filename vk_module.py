@@ -21,7 +21,7 @@ access_token_user = config["vk"]["access_token_user"]
 version = 5.131
 
 debug = True
-info_log(f"Debug mode: {debug}")
+
 
 vk_session_group = vk_api.VkApi(token=access_token_group)
 vk_group = vk_session_group.get_api()
@@ -49,7 +49,6 @@ def mutual_friends(array_friends):
     mutual_finish = []
 
     ids_user = valid_vk_friends(array_friends)
-    info_log("**", ids_user)
     for info in ids_user:
         if debug:
             info_log(info)
@@ -148,9 +147,11 @@ def start_app():
 
 
 if __name__ == '__main__':
-    level = logging.DEBUG
+    level = logging.INFO
+
     logging.basicConfig(
-        format="[%(asctime)s] |  [%(filename)s:%(lineno)d] | %(levelname):  %(message)s", datefmt="%Y-%m-%d %H:%M:%S",
+        format="[%(asctime)s] |  [%(filename)s:%(lineno)d] | [%(levelname)s] | [%(message)s]", datefmt="%Y-%m-%d %H:%M:%S",
         level=level
     )
+    info_log(f"Debug mode: {debug}")
     start_app()
