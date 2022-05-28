@@ -1,15 +1,27 @@
+import sys
+import configparser
 import vk_api
 import steam_module
+import steamid_module
 from vk_api.utils import get_random_id
 from vk_api.bot_longpoll import VkBotLongPoll
 
-access_token_group = ""
-access_token_user = ""
+
+config = configparser.ConfigParser()
+config.read('config.ini')
+
+
+access_token_group = config["vk"]["access_token_group"]
+access_token_user = config["vk"]["access_token_user"]
+
 version = 5.131
+
 debug = True
+print("Debug mode:", debug)
+
 vk_session_group = vk_api.VkApi(token=access_token_group)
 vk_group = vk_session_group.get_api()
-longpoll = VkBotLongPoll(vk_session_group, '')
+longpoll = VkBotLongPoll(vk_session_group, config["vk"]["group_id"])
 
 vk_session_user = vk_api.VkApi(token=access_token_user)
 vk_user = vk_session_user.get_api()
@@ -22,8 +34,8 @@ def valid_vk_friends(array_friends):
             user = vk_group.users.get(user_ids=friend, fields="city,domain")
             if user:
                 ids_user.append(user)
-        except:
-            continue
+        except Exception as e:
+                print("Критическая ошибка в анализе валидных друзей:\n", e)
     return ids_user
 
 
@@ -31,11 +43,10 @@ def mutual_friends(array_friends):
     number_id = []
     message_friends = []
     mutual_finish = []
-    ids_user = valid_vk_friends(array_friends)
 
+    ids_user = valid_vk_friends(array_friends)
+    print("**", ids_user)
     for info in ids_user:
-        if not info:
-            continue
         if debug:
             print(info)
         info = info[0]
@@ -43,8 +54,9 @@ def mutual_friends(array_friends):
         user_id = info.get('id')
         domain = info.get('domain')
         city = info.get('city')
-        if not info.get("is_closed") and not info.get("deactivated"):
+        if info.get("can_access_closed") and not info.get("deactivated"):
             number_id.append(user_id)
+
         if city is not None:
             city = city['title']
         else:
@@ -70,13 +82,25 @@ def mutual_friends(array_friends):
     return message_friends, mutual_finish
 
 
-# print(mutual_friends([323516185,217025049]))
+#print(mutual_friends([152385596,78157424]))
 
 for event in longpoll.listen():
     user_id = event.message["from_id"]
     text_message = event.message["text"]
-    if text_message.split(" ")[0].lower() == "чек" and len(text_message.split(" ")) == 2:
-        result, count_steam_friend = steam_module.steam_friends_parser(text_message.split(" ")[-1])
+    first_word = text_message.split(" ")[0].lower()
+    if (first_word == "deep" or first_word == "fast") and len(text_message.split(" ")) == 2:
+        vk_group.messages.send(user_id=user_id,
+                               message="Вы запустили {} поиск. Это может занять длительное время. Ожидайте... ".format(
+                                   first_word),
+                               random_id=get_random_id())
+        if first_word == "fast":
+            result, count_steam_friend = steam_module.steam_friends_parser(text_message.split(" ")[-1])
+        elif first_word == "deep":
+            result, count_steam_friend = steamid_module.get_friends(text_message.split(" ")[-1])
+        else:
+            print("Критическая ошибка в выборе режима, выход")
+            sys.exit(0)
+
         vk_group.messages.send(user_id=user_id,
                                message="Начинаем сканировать Steam. Анализ {} успешно найденых друзей. Подождите...".format(
                                    count_steam_friend),
