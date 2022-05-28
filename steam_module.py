@@ -1,5 +1,7 @@
 import requests
+
 from bs4 import BeautifulSoup
+from logging import error as err_log
 
 
 def steam_friends_parser(link):
@@ -22,6 +24,6 @@ def steam_friends_parser(link):
 
         return friends_valid_link, len(friends_valid_link)
     except Exception as e:
-        print("Критическая ошибка в парсинге стим аккаунта в fast режиме, скорее всего страница закрыта...", e)
+        err_log(f"Критическая ошибка в парсинге стим аккаунта в fast режиме, скорее всего страница закрыта... {e}")
 
 
