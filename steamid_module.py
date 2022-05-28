@@ -2,7 +2,9 @@ import time
 import configparser
 import json
 import requests
+
 from bs4 import BeautifulSoup
+from logging import info as info_log
 
 
 config = configparser.ConfigParser()
@@ -104,7 +106,7 @@ def get_urls(link):
     for i in link_friends:
         if i.a:
             old_urls.append(i.a.text)
-    print(old_urls)
+    info_log(old_urls)
     return old_urls
   #  print(link_friends)
 
