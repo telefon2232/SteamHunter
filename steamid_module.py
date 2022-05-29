@@ -13,7 +13,7 @@ config.read('config.ini')
 
 api_key = config["steamid"]["api_key"]
 steam_id = config["steamid"]["steam_id"]
-cookies = {'enwiki_session': 'cookie_consent_user_accepted=true; _ga=GA1.2.1572715655.1648886806; PHPSESSID=67jbs96tj7rorq8bji545hsabn; _gid=GA1.2.1686214880.1653503835; PHPSESSID=67jbs96tj7rorq8bji545hsabn; cf_chl_2=aceb2edaeab8c25; cf_chl_prog=x12; cf_clearance=nmjlRLs9ykvDs2mK6ltH8LhwON09Y2CvwlPUCRKy3v0-1653748264-0-150; cookie_consent_level={"strictly-necessary":true,"functionality":true,"tracking":true,"targeting":true}; _gat_gtag_UA_30991861_14=1; __cf_bm=EHd2OPAf6bPUNmMiAULwyCPYHlUOTRx6Fil1OVQxwrk-1653748266-0-AeYstpGFGHvsEC0HgER7arBm02dt6aHcX1wYLDfVs5o/qN4MdctBjXn+jPiEDC4Uz8NolOK0vLbAFHILsJaNdd/pw4PJXwlHhagy4FFzkGqYPa3dXCl1ywq2mx34fwfPfQ=='}
+cookies = {'enwiki_session': config["custom"]["cookies"]}
 useragent = config["custom"]["useragent"]
 headers = {
     'User-Agent': useragent

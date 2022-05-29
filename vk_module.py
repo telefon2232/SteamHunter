@@ -151,7 +151,12 @@ if __name__ == '__main__':
 
     logging.basicConfig(
         format="[%(asctime)s] |  [%(filename)s:%(lineno)d] | [%(levelname)s] | [%(message)s]", datefmt="%Y-%m-%d %H:%M:%S",
-        level=level
+        level=level,
+        handlers=[
+            logging.FileHandler(config["custom"]["log_filename"]),
+            logging.StreamHandler()
+        ]
     )
+    info_log("Program has been started!")
     info_log(f"Debug mode: {debug}")
     start_app()
