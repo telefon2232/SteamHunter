@@ -27,3 +27,5 @@ def steam_friends_parser(link):
         err_log(f"Критическая ошибка в парсинге стим аккаунта в fast режиме, скорее всего страница закрыта... {e}")
 
 
+def steam_locale_parser():
+    pass

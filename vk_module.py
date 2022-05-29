@@ -10,10 +10,8 @@ from logging import info as info_log, error as err_log, debug as dbg_log
 import steam_module
 import steamid_module
 
-
 config = configparser.ConfigParser()
 config.read('config.ini')
-
 
 access_token_group = config["vk"]["access_token_group"]
 access_token_user = config["vk"]["access_token_user"]
@@ -21,7 +19,6 @@ access_token_user = config["vk"]["access_token_user"]
 version = 5.131
 
 debug = True
-
 
 vk_session_group = vk_api.VkApi(token=access_token_group)
 vk_group = vk_session_group.get_api()
@@ -39,14 +36,17 @@ def valid_vk_friends(array_friends):
             if user:
                 ids_user.append(user)
         except Exception as e:
-                err_log(f"Критическая ошибка в анализе валидных друзей:\n {e}")
+            err_log(f"Критическая ошибка в анализе валидных друзей:\n {e}")
     return ids_user
 
 
 def mutual_friends(array_friends):
     number_id = []
+    domain_id = []
     message_friends = []
     mutual_finish = []
+    array_mutual_friends = []
+    dict_friends = {}
 
     ids_user = valid_vk_friends(array_friends)
     for info in ids_user:
@@ -59,12 +59,13 @@ def mutual_friends(array_friends):
         city = info.get('city')
         if info.get("can_access_closed") and not info.get("deactivated"):
             number_id.append(user_id)
+            domain_id.append(domain)
 
         if city is not None:
             city = city['title']
         else:
             city = "Город не найден"
-        message_friends.append("@id{} [{}]  - {}".format(user_id, domain, city))
+        message_friends.append("@id{} ({})  - {}".format(user_id, domain, city))
         if debug:
             dbg_log("id{} ({})  - {}".format(user_id, domain, city))
 
@@ -74,18 +75,28 @@ def mutual_friends(array_friends):
                 mutual = vk_user.friends.getMutual(source_uid=str(number_id[i]), target_uid=str(number_id[j]))
 
                 if len(mutual) != 0:
-                    mutual_finish.append("@id{} и @id{} имеют общих друзей: @id{}".format(number_id[i], number_id[j],
-                                                                                          " @id".join(
-                                                                                              list(map(str, mutual)))))
+                    mutual_finish.append(
+                        "✅ @id{} ({}) и @id{} ({}) имеют общих друзей: @id{}\n".format(number_id[i], domain_id[i],
+                                                                                       number_id[j], domain_id[j],
+                                                                                       " @id".join(
+                                                                                           list(map(str, mutual)))))
+                    array_mutual_friends += mutual
+
                     if debug:
                         dbg_log("id{} и id{} имеют общих друзей: id{}".format(number_id[i], number_id[j],
-                                                                            " id".join(list(map(str, mutual)))))
+                                                                              " id".join(list(map(str, mutual)))))
             except Exception as e:
                 err_log(f"Критическая ошибка в анализе общих друзей:\n {e}")
-    return message_friends, mutual_finish
+    for i in array_mutual_friends:
+        dict_friends[i] = dict_friends.get(i, 0) + 1
+
+    if debug:
+        dbg_log(array_mutual_friends)
+        dbg_log(dict_friends)
+    return message_friends, mutual_finish, dict_friends
 
 
-#print(mutual_friends([152385596,78157424]))
+# print(mutual_friends([152385596,78157424]))
 
 def start_app():
     for event in longpoll.listen():
@@ -133,6 +144,7 @@ def start_app():
                                            random_id=get_random_id())
 
             final_text = mutual_friends(result)
+            statistics_message = "\nСтатистика по найденым общим друзьям: \n"
             if len(final_text[0]) == 0:
                 final_text_friend = "Друзья из стима не найдены."
             else:
@@ -141,8 +153,17 @@ def start_app():
             if len(final_text[1]) == 0:
                 final_text_mutual = "Общие друзья у друзей не найдены."
             else:
+
                 final_text_mutual = "\n".join(final_text[1])
-            vk_group.messages.send(user_id=user_id, message=final_text_friend + "\n\n" + final_text_mutual,
+                for count in final_text[2].keys():
+                    statistics_message += "@id{} - {}, ".format(count, final_text[2].get(count))
+            if debug:
+                dbg_log(statistics_message)
+            vk_group.messages.send(user_id=user_id,
+                                   message=final_text_friend,
+                                   random_id=get_random_id())
+            vk_group.messages.send(user_id=user_id,
+                                   message=final_text_mutual + "\n" + statistics_message,
                                    random_id=get_random_id())
 
 
@@ -150,7 +171,8 @@ if __name__ == '__main__':
     level = logging.INFO
 
     logging.basicConfig(
-        format="[%(asctime)s] |  [%(filename)s:%(lineno)d] | [%(levelname)s] | [%(message)s]", datefmt="%Y-%m-%d %H:%M:%S",
+        format="[%(asctime)s] |  [%(filename)s:%(lineno)d] | [%(levelname)s] | [%(message)s]",
+        datefmt="%Y-%m-%d %H:%M:%S",
         level=level,
         handlers=[
             logging.FileHandler(config["custom"]["log_filename"]),
