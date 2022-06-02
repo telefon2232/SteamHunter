@@ -2,7 +2,7 @@ import sys
 import configparser
 import vk_api
 import logging
-
+import os
 from vk_api.utils import get_random_id
 from vk_api.bot_longpoll import VkBotLongPoll
 from logging import info as info_log, error as err_log, debug as dbg_log
@@ -10,8 +10,10 @@ from logging import info as info_log, error as err_log, debug as dbg_log
 import steam_module
 import steamid_module
 
+main_dir = "\\".join(os.path.dirname(os.path.realpath(__file__)).split('\\')[:-1])
 config = configparser.ConfigParser()
-config.read('config.ini')
+
+config.read(main_dir + "\\config.ini")
 
 access_token_group = config["vk"]["access_token_group"]
 access_token_user = config["vk"]["access_token_user"]
@@ -170,8 +172,9 @@ def start_app():
 if __name__ == '__main__':
     level = logging.INFO
 
+
     logging.basicConfig(
-        format="[%(asctime)s] |  [%(filename)s:%(lineno)d] | [%(levelname)s] | [%(message)s]",
+        format="\x1b[32m [%(asctime)s] |  [%(filename)s:%(lineno)d] | [%(levelname)s] | [%(message)s]",
         datefmt="%Y-%m-%d %H:%M:%S",
         level=level,
         handlers=[

@@ -2,14 +2,15 @@ import time
 import configparser
 import json
 import requests
-
+import os
 from bs4 import BeautifulSoup
 from logging import info as info_log
 
 
+main_dir = "\\".join(os.path.dirname(os.path.realpath(__file__)).split('\\')[:-1])
 config = configparser.ConfigParser()
-config.read('config.ini')
 
+config.read(main_dir + "\\config.ini")
 
 api_key = config["steamid"]["api_key"]
 steam_id = config["steamid"]["steam_id"]
@@ -36,8 +37,8 @@ def get_friends(link):
     parser_service = requests.get(link_service, cookies=cookies, headers=headers).text
     soup = BeautifulSoup(parser_service, 'html.parser')
     #print(soup)
-    link_friends = str(soup.find_all("td", {"class": "hidden-xs hidden-sm"}))
-
+    link_friends = str(soup.find_all("td", {"class": "d-md-table-cell"}))
+   # print(link_friends)
     soup_friends = BeautifulSoup(link_friends, 'html.parser')
     link_friends = soup_friends.find_all("a")
 
