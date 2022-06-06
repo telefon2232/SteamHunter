@@ -38,7 +38,7 @@ def get_friends(link):
     soup = BeautifulSoup(parser_service, 'html.parser')
     #print(soup)
     link_friends = str(soup.find_all("td", {"class": "d-md-table-cell"}))
-   # print(link_friends)
+    #print(link_friends)
     soup_friends = BeautifulSoup(link_friends, 'html.parser')
     link_friends = soup_friends.find_all("a")
 
@@ -85,8 +85,29 @@ def get_friends(link):
     return final_name_url_friends, len(final_name_url_friends)
 
 
-def get_nicknames():
-    pass
+def get_nicknames(link):
+    service = "https://steamid.uk/profile/"
+    if link[-1] == "/":
+        link = link[:-1]
+    if len(link.split("/")) == 1:
+        steam_id = link
+    else:
+        steam_id = link.split("/")[-1]
+    # print(steam_id)
+
+    link_service = service + steam_id
+    parser_service = requests.get(link_service, cookies=cookies, headers=headers).text
+    soup = BeautifulSoup(parser_service, 'html.parser')
+    # print(soup)
+    link_friends = str(soup.find_all("div", {"class": "namehistory-names"}))
+    soup_friends = BeautifulSoup(link_friends, 'html.parser')
+    link_friends = soup_friends.find_all("a")
+    old_nicknames = []
+    for i in link_friends:
+        if i.get("href"):
+            old_nicknames.append(i.text)
+    return old_nicknames
+   # print(link_friends)
 
 def get_urls(link):
     service = "https://steamid.uk/profile/"
@@ -102,14 +123,17 @@ def get_urls(link):
     parser_service = requests.get(link_service, cookies=cookies, headers=headers).text
     soup = BeautifulSoup(parser_service, 'html.parser')
     #print(soup)
-    link_friends = soup.find_all("span", {"class": "label label-default"})
+    link_friends = soup.find_all("span", {"class": "badge mr-2"})
+
     old_urls = []
     for i in link_friends:
         if i.a:
+
             old_urls.append(i.a.text)
     info_log(old_urls)
     return old_urls
-  #  print(link_friends)
 
-#get_urls("https://steamid.uk/profile/76561198023414915")
+
+#get_urls("https://steamid.uk/profile/thredriper3990x")
+get_nicknames("https://steamid.uk/profile/thredriper3990x")
 #get_friends("https://steamcommunity.com/id/thredriper3990x")
