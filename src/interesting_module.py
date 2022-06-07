@@ -1,26 +1,21 @@
 import vk_module
+import vk_api
+games_dict = {'dota': ['dota', 'дота', 'VK Dota 2', 'дота 2'],
+     'cs': ['cs', 'кс', 'counter', "CS:GO HS"]
+}
 
-games_list = [
-    {
-        'id': 'dota',
-        'value': ['dota', 'дота', 'dota2', 'дота2']
-    },
-    {
-        'id': 'cs',
-        'value': ['cs', 'кс', 'counter']
-    }
-]
+vk_session_user = vk_api.VkApi(token=vk_module.access_token_user)
+vk_user = vk_session_user.get_api()
 
 
-def groups_analyzer(user_id_check, send_id):
-    groups_list = user_session.method('groups.get', {'user_id': user_id_check, 'extended': 1}).get('items')
-    game_counter = {}
-    for i in range(len(groups_list)):
-        for theme in games_list:
-            for item in theme.get('value'):
-                if " " + item + " " in (" " + groups_list[i]['name'].lower() + " "):
-                    if theme.get('id') in game_counter.keys():
-                        game_counter[theme.get('id')] = game_counter.get(theme.get('id')) + 1
-                    else:
-                        game_counter[theme.get('id')] = 1
-    return game_counter
+def groups_analyzer(user_id):
+    groups_list = vk_user.groups.get(user_id=user_id, extended=1).get("items")
+    for i in groups_list:
+        for j in games_dict.keys():
+            if i.get("name") in games_dict.get(j):
+                return i.get("name")
+    return "Группы по играм не найдены."
+
+
+
+#print(groups_analyzer(137516299))
