@@ -13,7 +13,8 @@ config = configparser.ConfigParser()
 config.read(main_dir + "\\config.ini")
 
 api_key = config["steamid"]["api_key"]
-steam_id = config["steamid"]["steam_id"]
+myid = config["steamid"]["steam_id"]
+
 cookies = {'enwiki_session': config["custom"]["cookies"]}
 useragent = config["custom"]["useragent"]
 headers = {
@@ -38,17 +39,18 @@ def get_friends(link):
     soup = BeautifulSoup(parser_service, 'html.parser')
     #print(soup)
     link_friends = str(soup.find_all("td", {"class": "d-md-table-cell"}))
-    #print(link_friends)
+   # print(link_friends)
     soup_friends = BeautifulSoup(link_friends, 'html.parser')
     link_friends = soup_friends.find_all("a")
 
     for i in link_friends:
         if "profile" in i['href']:
             id_friends.append(i['href'].split("/")[-1])
-
+    #print(id_friends)
     get_url_json = []
     simple_step = []
-    array_friends = "https://steamidapi.uk/v2/convert.php?myid=76561198267134991&apikey={}&input=".format(api_key)
+    array_friends = "https://steamidapi.uk/v2/convert.php?myid={}&apikey={}&input=".format(myid, api_key)
+    #print(array_friends)
     step_part = 100
     if len(id_friends) > step_part:
         for i in range(0, len(id_friends), step_part):
@@ -56,16 +58,18 @@ def get_friends(link):
         simple_step.append(len(id_friends) % step_part + simple_step[-1])
     else:
         simple_step = [0, len(id_friends)]
-#    print(simple_step)
+   # print(simple_step)
     if len(simple_step) > 2:
         for i in range(0, len(simple_step)-1):
             part_link = (array_friends + ",".join(id_friends[simple_step[i]:simple_step[i+1]]))
+
             temp_json = json.loads(requests.get(part_link).text).get("converted")
+
             for j in temp_json:
                 get_url_json.append(j.get("inviteurl"))
     else:
             part_link = array_friends + ",".join(id_friends)
-         #  print(part_link)
+            #print(part_link)
             temp_json = json.loads(requests.get(part_link).text).get("converted")
             for j in temp_json:
                 get_url_json.append(j.get("inviteurl"))
@@ -109,6 +113,7 @@ def get_nicknames(link):
     return old_nicknames
    # print(link_friends)
 
+
 def get_urls(link):
     service = "https://steamid.uk/profile/"
     if link[-1] == "/":
@@ -135,5 +140,5 @@ def get_urls(link):
 
 
 #get_urls("https://steamid.uk/profile/thredriper3990x")
-get_nicknames("https://steamid.uk/profile/thredriper3990x")
+#get_nicknames("https://steamid.uk/profile/thredriper3990x")
 #get_friends("https://steamcommunity.com/id/thredriper3990x")
