@@ -1,14 +1,26 @@
 import vk_module
 
-dota_names = ['dota', 'дота', 'cs', 'кс', 'counter']
+games_list = [
+    {
+        'id': 'dota',
+        'value': ['dota', 'дота', 'dota2', 'дота2']
+    },
+    {
+        'id': 'cs',
+        'value': ['cs', 'кс', 'counter']
+    }
+]
 
 
-def interesting(user_id_check, send_id):
-    groups_list = vk_module.vk_session_user.method('groups.get', {'user_id': user_id_check, 'extended': 1}).get('items')
-    print(groups_list)
-    count_game_public = 0
+def groups_analyzer(user_id_check, send_id):
+    groups_list = user_session.method('groups.get', {'user_id': user_id_check, 'extended': 1}).get('items')
+    game_counter = {}
     for i in range(len(groups_list)):
-        for word in dota_names:
-            if word in groups_list[i]['name'].lower():
-                count_game_public = count_game_public + 1
-    vk_module.vk_group.messages.send(send_id, 'Count Of Gamer Groups:' + str(count_game_public))
+        for theme in games_list:
+            for item in theme.get('value'):
+                if " " + item + " " in (" " + groups_list[i]['name'].lower() + " "):
+                    if theme.get('id') in game_counter.keys():
+                        game_counter[theme.get('id')] = game_counter.get(theme.get('id')) + 1
+                    else:
+                        game_counter[theme.get('id')] = 1
+    return game_counter
