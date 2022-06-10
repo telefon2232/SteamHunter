@@ -1,30 +1,12 @@
 import time
-import configparser
 import json
 import requests
-import os
 from bs4 import BeautifulSoup
-from logging import info as info_log
+
+import config_access
 
 
-main_dir = "\\".join(os.path.dirname(os.path.realpath(__file__)).split('\\')[:-1])
-config = configparser.ConfigParser()
-
-config.read(main_dir + "\\config.ini")
-
-api_key = config["steamid"]["api_key"]
-myid = config["steamid"]["steam_id"]
-
-cookies = {'enwiki_session': config["custom"]["cookies"]}
-useragent = config["custom"]["useragent"]
-headers = {
-    'User-Agent': useragent
-}
-
-
-def get_friends(link):
-    id_friends = []
-
+def get_steamid_page(link):
     service = "https://steamid.uk/profile/"
     if link[-1] == "/":
         link = link[:-1]
@@ -32,11 +14,19 @@ def get_friends(link):
         steam_id = link
     else:
         steam_id = link.split("/")[-1]
-    #print(steam_id)
-
+    # print(steam_id)
     link_service = service + steam_id
-    parser_service = requests.get(link_service, cookies=cookies, headers=headers).text
+    parser_service = requests.get(link_service, cookies=config_access.cookies, headers=config_access.headers).text
     soup = BeautifulSoup(parser_service, 'html.parser')
+
+    return soup
+
+
+
+def get_friends(soup):
+    id_friends = []
+
+
     #print(soup)
     link_friends = str(soup.find_all("td", {"class": "d-md-table-cell"}))
    # print(link_friends)
@@ -49,7 +39,7 @@ def get_friends(link):
     #print(id_friends)
     get_url_json = []
     simple_step = []
-    array_friends = "https://steamidapi.uk/v2/convert.php?myid={}&apikey={}&input=".format(myid, api_key)
+    array_friends = "https://steamidapi.uk/v2/convert.php?myid={}&apikey={}&input=".format(config_access.myid, config_access.api_key)
     #print(array_friends)
     step_part = 100
     if len(id_friends) > step_part:
@@ -89,19 +79,8 @@ def get_friends(link):
     return final_name_url_friends, len(final_name_url_friends)
 
 
-def get_nicknames(link):
-    service = "https://steamid.uk/profile/"
-    if link[-1] == "/":
-        link = link[:-1]
-    if len(link.split("/")) == 1:
-        steam_id = link
-    else:
-        steam_id = link.split("/")[-1]
-    # print(steam_id)
+def get_nicknames(soup):
 
-    link_service = service + steam_id
-    parser_service = requests.get(link_service, cookies=cookies, headers=headers).text
-    soup = BeautifulSoup(parser_service, 'html.parser')
     # print(soup)
     link_friends = str(soup.find_all("div", {"class": "namehistory-names"}))
     soup_friends = BeautifulSoup(link_friends, 'html.parser')
@@ -114,19 +93,8 @@ def get_nicknames(link):
    # print(link_friends)
 
 
-def get_urls(link):
-    service = "https://steamid.uk/profile/"
-    if link[-1] == "/":
-        link = link[:-1]
-    if len(link.split("/")) == 1:
-        steam_id = link
-    else:
-        steam_id = link.split("/")[-1]
-    # print(steam_id)
+def get_urls(soup):
 
-    link_service = service + steam_id
-    parser_service = requests.get(link_service, cookies=cookies, headers=headers).text
-    soup = BeautifulSoup(parser_service, 'html.parser')
     #print(soup)
     link_friends = soup.find_all("span", {"class": "badge mr-2"})
 
@@ -135,8 +103,18 @@ def get_urls(link):
         if i.a:
 
             old_urls.append(i.a.text)
-    info_log(old_urls)
+    #info_log(old_urls)
     return old_urls
+
+
+def get_full_info(soup):
+    friends = get_friends(soup)
+    nicknames = get_nicknames(soup)
+    urls = get_urls(soup)
+    return friends, nicknames, urls
+
+
+
 
 
 #get_urls("https://steamid.uk/profile/thredriper3990x")
