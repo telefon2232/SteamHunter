@@ -31,9 +31,13 @@ def start_app():
                                    random_id=get_random_id())
             if first_word == "fast":
                 result, count_steam_friend = steam_module.steam_friends_parser(text_message.split(" ")[-1])
+                nicknames = "Доступно только в deep поиске" # change to normal!!!
+                urls = "Доступно только в deep поиске"
             elif first_word == "deep":
                 friends, nicknames, urls = steamid_module.get_full_info(steamid_module.get_steamid_page(text_message.split(" ")[-1]))
                 result, count_steam_friend = friends
+                nicknames = " | ".join(nicknames)
+                urls = " | ".join(urls)
 
             else:
                 err_log("Критическая ошибка в выборе режима, выход")
@@ -86,8 +90,13 @@ def start_app():
             vk_group.messages.send(user_id=user_id,
                                    message=final_text_friend,
                                    random_id=get_random_id())
+
             vk_group.messages.send(user_id=user_id,
                                    message=final_text_mutual + "\n" + statistics_message,
+                                   random_id=get_random_id())
+
+            vk_group.messages.send(user_id=user_id,
+                                   message="nicknames:\n" + nicknames + "\nurls: " + urls,
                                    random_id=get_random_id())
 
 

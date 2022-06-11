@@ -1,10 +1,10 @@
-import endpoint
+import config_access
 import vk_api
 games_dict = {'dota': ['dota', 'дота', 'VK Dota 2', 'дота 2'],
      'cs': ['cs', 'кс', 'counter', "CS:GO HS"]
 }
 
-vk_session_user = vk_api.VkApi(token=endpoint.access_token_user)
+vk_session_user = vk_api.VkApi(token=config_access.access_token_user)
 vk_user = vk_session_user.get_api()
 
 
