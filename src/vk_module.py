@@ -1,3 +1,4 @@
+import time
 
 import vk_api
 
@@ -24,6 +25,42 @@ def valid_vk_friends(array_friends):
         except Exception as e:
             err_log(f"Критическая ошибка в анализе валидных друзей:\n {e}")
     return ids_user
+
+
+def get_friends_user(array_friends,domain_id):
+
+
+    friend_list = []
+    mutual_finish = []
+    array_mutual_friends = []
+
+    for friend in array_friends:
+        try:
+            user = vk_user.friends.get(user_id=friend)
+            if user:
+                friend_list.append(user.get("items"))
+        except Exception as e:
+            err_log(f"Критическая ошибка в анализе валидных друзей:\n {e}")
+
+    for i in range(len(array_friends)):
+        for j in range(i+1,len(array_friends)):
+
+            mutual = list(set(friend_list[i]) & set(friend_list[j]))
+            if len(mutual) != 0:
+                array_mutual_friends+=mutual
+                mutual_finish.append("✅ @id{} ({}) и @id{} ({}) имеют общих друзей: @id{}\n".format(array_friends[i], domain_id[i],
+                                                                                       array_friends[j], domain_id[j],
+                                                                                       " @id".join(
+                                                                                           list(map(str, mutual)))))
+
+
+    if debug:
+        dbg_log(mutual_finish)
+
+
+    return mutual_finish,array_mutual_friends
+
+#print(get_friends_user([137000677,137516299],["an","iv"]))
 
 
 def mutual_friends(array_friends):
@@ -55,25 +92,8 @@ def mutual_friends(array_friends):
         message_friends.append("@id{} ({})  - {}".format(user_id, domain, city))
         if debug:
             dbg_log("id{} ({})  - {}".format(user_id, domain, city))
+    mutual_finish, array_mutual_friends = get_friends_user(number_id,domain_id)
 
-    for i in range(len(number_id)):
-        for j in range(i, len(number_id)):
-            try:
-                mutual = vk_user.friends.getMutual(source_uid=str(number_id[i]), target_uid=str(number_id[j]))
-
-                if len(mutual) != 0:
-                    mutual_finish.append(
-                        "✅ @id{} ({}) и @id{} ({}) имеют общих друзей: @id{}\n".format(number_id[i], domain_id[i],
-                                                                                       number_id[j], domain_id[j],
-                                                                                       " @id".join(
-                                                                                           list(map(str, mutual)))))
-                    array_mutual_friends += mutual
-
-                    if debug:
-                        dbg_log("id{} и id{} имеют общих друзей: id{}".format(number_id[i], number_id[j],
-                                                                              " id".join(list(map(str, mutual)))))
-            except Exception as e:
-                err_log(f"Критическая ошибка в анализе общих друзей:\n {e}")
     for i in array_mutual_friends:
         dict_friends[i] = dict_friends.get(i, 0) + 1
 
@@ -85,3 +105,47 @@ def mutual_friends(array_friends):
 
 
 # print(mutual_friends([152385596,78157424]))
+
+def get_probability(targets):
+    games_dict = {'dota': ['dota', 'дота', 'vk dota 2', 'дота 2'],
+                  'cs': ['cs', 'кс', 'counter', "cs:go hs"]
+                  }
+    probability = {}
+    sex = []  # Не было (Пол)
+    interesting = []  # Анализ интересов
+    last_connect = []  # Последний заход
+    count_target = []  # Количество совпадений в общих
+    word_in_status = []  # Слова в статусе
+    count_of_friends = []  # Количество друзей (5000+ друзей скорее всего неправильный результат)
+    name_of_videos = []  # Названия в видео могут быть связаны с игрой
+    summary = vk_group.users.get(user_ids=targets, fields="domain,games,last_seen,online,sex,status")
+    for target in summary:
+        print(target)
+        if target.get("sex") == 2:
+            probability[target.get("id")] = 16
+
+    print(target)
+
+
+
+#get_probability([152385596])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
