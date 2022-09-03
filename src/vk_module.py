@@ -100,6 +100,10 @@ def mutual_friends(array_friends):
     if debug:
         dbg_log(array_mutual_friends)
         dbg_log(dict_friends)
+        if len(dict_friends) != 0:
+            sorted_tuples = sorted(dict_friends.items(), key=lambda item: item[1],reverse=True)
+
+            dict_friends = {k: v for k, v in sorted_tuples}
    # print(mutual_finish,dict_friends)
     return message_friends, mutual_finish, dict_friends
 
