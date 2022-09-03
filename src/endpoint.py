@@ -40,11 +40,11 @@ def start_app():
                 urls = " | ".join(urls)
 
             else:
-                err_log("Критическая ошибка в выборе режима, выход")
+                err_log("⚠ Критическая ошибка в выборе режима, выход")
                 sys.exit(0)
 
             vk_group.messages.send(user_id=user_id,
-                                   message="Начинаем сканировать Steam. Анализ {} успешно найденых друзей. Подождите...".format(
+                                   message="🔎 Начинаем сканировать Steam. Анализ {} успешно найденых друзей. Подождите...".format(
                                        count_steam_friend),
                                    random_id=get_random_id())
 
@@ -63,7 +63,7 @@ def start_app():
                 person = vk_module.valid_vk_friends([steam_id])
                 if person:
                     vk_group.messages.send(user_id=user_id,
-                                           message="Возможно наша цель найдена! *{}".format(steam_id),
+                                           message="💡 Возможно наша цель найдена! *{}".format(steam_id),
                                            random_id=get_random_id())
                 else:
                     vk_group.messages.send(user_id=user_id,

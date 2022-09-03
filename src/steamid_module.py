@@ -1,3 +1,4 @@
+import sys
 import time
 import json
 import requests
@@ -18,7 +19,7 @@ def get_steamid_page(link):
     link_service = service + steam_id
     parser_service = requests.get(link_service, cookies=config_access.cookies, headers=config_access.headers).text
     soup = BeautifulSoup(parser_service, 'html.parser')
-
+   # print(soup)
     return soup
 
 
@@ -29,7 +30,7 @@ def get_friends(soup):
 
     #print(soup)
     link_friends = str(soup.find_all("td", {"class": "d-md-table-cell"}))
-   # print(link_friends)
+    #print(link_friends)
     soup_friends = BeautifulSoup(link_friends, 'html.parser')
     link_friends = soup_friends.find_all("a")
 
@@ -56,21 +57,30 @@ def get_friends(soup):
             temp_json = json.loads(requests.get(part_link).text).get("converted")
 
             for j in temp_json:
-                get_url_json.append(j.get("inviteurl"))
+                get_url_json.append(j.get("steamid64"))
     else:
             part_link = array_friends + ",".join(id_friends)
             #print(part_link)
+
             temp_json = json.loads(requests.get(part_link).text).get("converted")
+
             for j in temp_json:
-                get_url_json.append(j.get("inviteurl"))
+                get_url_json.append(j.get("steamid64"))
 
     name_url_friends = []
+    temp_profile = "https://steamcommunity.com/profiles/"
     for i in get_url_json:
         time.sleep(0.1)
-        name_url_friends.append(requests.get(str(i)).url)
 
 
-   #print(name_url_friends)
+        request_result = requests.get(temp_profile + str(i)).url
+        if request_result[-1] == "/":
+            request_result = request_result[:-1]
+        name_url_friends.append(request_result)
+
+
+    #print(name_url_friends)
+
     final_name_url_friends = []
     for i in name_url_friends:
         if not i.split("/")[-1].isdigit():
@@ -85,10 +95,12 @@ def get_nicknames(soup):
     link_friends = str(soup.find_all("div", {"class": "namehistory-names"}))
     soup_friends = BeautifulSoup(link_friends, 'html.parser')
     link_friends = soup_friends.find_all("a")
+
     old_nicknames = []
     for i in link_friends:
         if i.get("href"):
             old_nicknames.append(i.text)
+
     return old_nicknames
    # print(link_friends)
 
